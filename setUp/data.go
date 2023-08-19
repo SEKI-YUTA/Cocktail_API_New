@@ -1,29 +1,20 @@
 package setup
 
-type Ingredient struct {
-    name string
-    description string
-    vol int
-}
-
-type Cocktail struct {
-    name string
-    description string
-    vol int
-    ingredients []Ingredient
-}
+import (
+	"cocktail_api/common"
+)
 
 func CocktailFactory(
 	name string,
 	description string,
 	vol int,
-	ingredients []Ingredient,
-) *Cocktail {
-	return &Cocktail{
-		name: name,
-		description: description,
-		vol: vol,
-		ingredients: ingredients,
+	ingredients []common.Ingredient,
+) *common.Cocktail {
+	return &common.Cocktail{
+		Name: name,
+		Description: description,
+		Vol: vol,
+		Ingredients: ingredients,
 	}
 }
 
@@ -31,11 +22,11 @@ func IngredientFactory(
 	name string,
     description string,
     vol int,
-) *Ingredient {
-	return &Ingredient{
-		name: name,
-		description: description,
-		vol: vol,
+) *common.Ingredient {
+	return &common.Ingredient{
+		Name: name,
+		Description: description,
+		Vol: vol,
 	}
 }
 
@@ -55,23 +46,23 @@ var gigerAle = IngredientFactory("ジンジャーエール", "ジンジャーの
 var orangeJuice = IngredientFactory("オレンジジュース", "", 0)
 // limeJuice := IngredientFactory("ライムジュース", "ジンジャーの味がする炭酸飲料", false, 0)
 
-var cocktailArr = []*Cocktail{
-	CocktailFactory("ジンバッグ", "ジンベースのカクテル", 15, []Ingredient{
+var cocktailArr = []*common.Cocktail{
+	CocktailFactory("ジンバッグ", "ジンベースのカクテル", 15, []common.Ingredient{
 		*gin, *gigerAle,
 	}),
-	CocktailFactory("スクリュードライバー", "ウォッカベースのカクテル", 15, []Ingredient{
+	CocktailFactory("スクリュードライバー", "ウォッカベースのカクテル", 15, []common.Ingredient{
 		*vodka, *orangeJuice,
 	}),
-	CocktailFactory("ラムバッグ", "ラムベースのカクテル", 15, []Ingredient{
+	CocktailFactory("ラムバッグ", "ラムベースのカクテル", 15, []common.Ingredient{
 		*ram, *gigerAle,
 	}),
-	CocktailFactory("ジンジャーハイ", "", 15, []Ingredient{
+	CocktailFactory("ジンジャーハイ", "", 15, []common.Ingredient{
 		*whiskey, *gigerAle,
 	}),
-	CocktailFactory("カシスオレンジ", "", 15, []Ingredient{
+	CocktailFactory("カシスオレンジ", "", 15, []common.Ingredient{
 		*cassis, *orangeJuice,
 	}),
-	CocktailFactory("ピーチオレンジ", "", 15, []Ingredient{
+	CocktailFactory("ピーチオレンジ", "", 15, []common.Ingredient{
 		*fuzzyNavel, *orangeJuice,
 	}),
 }

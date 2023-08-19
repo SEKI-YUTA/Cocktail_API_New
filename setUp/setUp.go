@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v4"
 )
 
 
@@ -57,32 +57,32 @@ func StartSetUp() {
 		// var name string
 		cocktail_id := 0
 		name := ""
-		fmt.Println("カクテル挿入 ", cocktail.name, " ", cocktail.description, " ", cocktail.vol)
-		if(checkExists(cocktail_table,"cocktail_id" ,cocktail.name, conn)!=0) {
-			fmt.Println("already exists: ", cocktail.name)
+		fmt.Println("カクテル挿入 ", cocktail.Name, " ", cocktail.Description, " ", cocktail.Vol)
+		if(checkExists(cocktail_table,"cocktail_id" ,cocktail.Name, conn)!=0) {
+			fmt.Println("already exists: ", cocktail.Name)
 			continue
 		}
 		rows := conn.QueryRow(
 			context.Background(),
 			"INSERT INTO cocktails (name, description, vol) VALUES ($1, $2, $3) RETURNING cocktail_id, name",
-			cocktail.name, cocktail.description, cocktail.vol,
+			cocktail.Name, cocktail.Description, cocktail.Vol,
 		)
 		rows.Scan(&cocktail_id, &name)
 		fmt.Println("inserted cocktail id: ", cocktail_id, "name: ", name)
 
-		ingredients := cocktail.ingredients
+		ingredients := cocktail.Ingredients
 		fmt.Println("ingredients: ", ingredients)
 		for _, ingredient := range ingredients {
-			ingredient_id := checkExists(ingredient_table, "ingredient_id", ingredient.name, conn)
+			ingredient_id := checkExists(ingredient_table, "ingredient_id", ingredient.Name, conn)
 			if(ingredient_id!= 0) {
-				fmt.Println("already exists: ", ingredient.name)
+				fmt.Println("already exists: ", ingredient.Name)
 				insertToJoinTable(cocktail_id, ingredient_id, conn)
 				continue
 			}
 			conn.QueryRow(
 				context.Background(),
 				"INSERT INTO ingredients (name, description, vol) VALUES ($1, $2, $3) RETURNING ingredient_id, name",
-				ingredient.name, ingredient.description, ingredient.vol,
+				ingredient.Name, ingredient.Description, ingredient.Vol,
 			).Scan(&ingredient_id, &name)
 			fmt.Println("inserted ingredient id: ", ingredient_id, "name: ", name)
 			// ingredient_id_arr = append(ingredient_id_arr, ingredient_id)
