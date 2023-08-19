@@ -8,12 +8,14 @@ func CocktailFactory(
 	name string,
 	description string,
 	vol int,
+	ingredientCount int,
 	ingredients []common.Ingredient,
 ) *common.Cocktail {
 	return &common.Cocktail{
 		Name: name,
 		Description: description,
 		Vol: vol,
+		IngredientCount: ingredientCount,
 		Ingredients: ingredients,
 	}
 }
@@ -34,35 +36,35 @@ const dbURL string = "postgres://root:root@localhost:5432/cocktail_db"
 const cocktail_table string = "cocktails"
 const ingredient_table string = "ingredients"
 
-var gin = IngredientFactory("ジン", "", 40)
-var vodka = IngredientFactory("ウォッカ", "",  40)
-var ram = IngredientFactory("ラム", "", 40)
-var whiskey = IngredientFactory("ウィスキー", "", 40)
-var cassis = IngredientFactory("カシス", "", 40)
+var Gin = IngredientFactory("ジン", "", 40)
+var Vodka = IngredientFactory("ウォッカ", "",  40)
+var Ram = IngredientFactory("ラム", "", 40)
+var Whiskey = IngredientFactory("ウィスキー", "", 40)
+var Cassis = IngredientFactory("カシス", "", 40)
 var fuzzyNavel = IngredientFactory("ファジーネーブル", "", 40)
 // plumWine := IngredientFactory("梅酒", "", true, 40)
 // brandy := IngredientFactory("ブランデー", "", true, 40)
-var gigerAle = IngredientFactory("ジンジャーエール", "ジンジャーの味がする炭酸飲料", 0)
-var orangeJuice = IngredientFactory("オレンジジュース", "", 0)
+var GigerAle = IngredientFactory("ジンジャーエール", "ジンジャーの味がする炭酸飲料", 0)
+var OrangeJuice = IngredientFactory("オレンジジュース", "", 0)
 // limeJuice := IngredientFactory("ライムジュース", "ジンジャーの味がする炭酸飲料", false, 0)
 
-var cocktailArr = []*common.Cocktail{
-	CocktailFactory("ジンバッグ", "ジンベースのカクテル", 15, []common.Ingredient{
-		*gin, *gigerAle,
+var CocktailArr = []*common.Cocktail{
+	CocktailFactory("ジンバッグ", "ジンベースのカクテル", 15, 2, []common.Ingredient{
+		*Gin, *GigerAle,
 	}),
-	CocktailFactory("スクリュードライバー", "ウォッカベースのカクテル", 15, []common.Ingredient{
-		*vodka, *orangeJuice,
+	CocktailFactory("スクリュードライバー", "ウォッカベースのカクテル", 15, 2, []common.Ingredient{
+		*Vodka, *OrangeJuice,
 	}),
-	CocktailFactory("ラムバッグ", "ラムベースのカクテル", 15, []common.Ingredient{
-		*ram, *gigerAle,
+	CocktailFactory("ラムバッグ", "ラムベースのカクテル", 15, 2, []common.Ingredient{
+		*Ram, *GigerAle,
 	}),
-	CocktailFactory("ジンジャーハイ", "", 15, []common.Ingredient{
-		*whiskey, *gigerAle,
+	CocktailFactory("ジンジャーハイ", "", 15, 2, []common.Ingredient{
+		*Whiskey, *GigerAle,
 	}),
-	CocktailFactory("カシスオレンジ", "", 15, []common.Ingredient{
-		*cassis, *orangeJuice,
+	CocktailFactory("カシスオレンジ", "", 15, 2, []common.Ingredient{
+		*Cassis, *OrangeJuice,
 	}),
-	CocktailFactory("ピーチオレンジ", "", 15, []common.Ingredient{
-		*fuzzyNavel, *orangeJuice,
+	CocktailFactory("ピーチオレンジ", "", 15, 2, []common.Ingredient{
+		*fuzzyNavel, *OrangeJuice,
 	}),
 }

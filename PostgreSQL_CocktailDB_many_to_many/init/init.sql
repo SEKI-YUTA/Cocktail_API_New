@@ -14,6 +14,7 @@ CREATE TABLE cocktails(
     name varchar(100),
     description varchar(1000) DEFAULT '',
     vol int DEFAULT 0,
+    ingredient_count int DEFAULT 0,
     primary key(cocktail_id)
 );
 

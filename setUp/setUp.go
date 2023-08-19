@@ -8,7 +8,6 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-
 // 既に存在していた場合は０以外の値を返す
 func checkExists(
 	tableName string,
@@ -52,20 +51,20 @@ func StartSetUp() {
 	}
 	defer conn.Close(context.Background())
 
-	for _, cocktail := range cocktailArr {
+	for _, cocktail := range CocktailArr {
 		// var cocktail_id int
 		// var name string
 		cocktail_id := 0
 		name := ""
-		fmt.Println("カクテル挿入 ", cocktail.Name, " ", cocktail.Description, " ", cocktail.Vol)
+		fmt.Println("カクテル挿入 ", cocktail.Name, " ", cocktail.Description, " ", cocktail.IngredientCount, " ", cocktail.Vol)
 		if(checkExists(cocktail_table,"cocktail_id" ,cocktail.Name, conn)!=0) {
 			fmt.Println("already exists: ", cocktail.Name)
 			continue
 		}
 		rows := conn.QueryRow(
 			context.Background(),
-			"INSERT INTO cocktails (name, description, vol) VALUES ($1, $2, $3) RETURNING cocktail_id, name",
-			cocktail.Name, cocktail.Description, cocktail.Vol,
+			"INSERT INTO cocktails (name, description, ingredient_count, vol) VALUES ($1, $2, $3, $4) RETURNING cocktail_id, name",
+			cocktail.Name, cocktail.Description, cocktail.IngredientCount, cocktail.Vol,
 		)
 		rows.Scan(&cocktail_id, &name)
 		fmt.Println("inserted cocktail id: ", cocktail_id, "name: ", name)

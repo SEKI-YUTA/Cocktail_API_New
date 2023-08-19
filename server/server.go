@@ -2,6 +2,7 @@ package server
 
 import (
 	"cocktail_api/common"
+	"cocktail_api/setup"
 	"context"
 	"fmt"
 	"os"
@@ -42,6 +43,7 @@ func StartServer() {
 	fmt.Println("start app")
 	router := gin.Default()
 	router.GET("/ingredients", responseAllIngredients)
+	router.GET("/cocktails", responseCocktails)
 	router.Run("localhost:9090")
 	fmt.Println("end app")
 }
@@ -70,4 +72,9 @@ func getAllIngredients() []common.Ingredient {
 func responseAllIngredients(ctx *gin.Context) {
 	ingredients := getAllIngredients()
 	ctx.JSON(200, ingredients)
+}
+
+func responseCocktails(ctx *gin.Context) {
+	cocktails := setup.CocktailArr
+	ctx.JSON(200, cocktails)
 }
