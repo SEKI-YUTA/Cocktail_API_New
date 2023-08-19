@@ -1,4 +1,4 @@
-package main
+package setup
 
 import (
 	"context"
@@ -41,7 +41,7 @@ func insertToJoinTable(cocktail_id int, ingredient_id int, conn *pgx.Conn) {
 			fmt.Println("cocktail_ingredient_id: ", cocktail_ingredient_id)
 }
 
-func main() {
+func StartSetUp() {
 	fmt.Println("setUp.go start")
 
 	conn, err := pgx.Connect(context.Background(), dbURL)

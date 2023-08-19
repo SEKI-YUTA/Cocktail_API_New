@@ -1,4 +1,4 @@
-package main
+package setup
 
 type Ingredient struct {
     name string
