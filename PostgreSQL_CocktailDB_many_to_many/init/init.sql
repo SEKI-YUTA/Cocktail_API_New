@@ -4,6 +4,7 @@ CREATE DATABASE cocktail_db;
 CREATE TABLE ingredients(
     ingredient_id serial not null,
     name varchar(100),
+    -- category varchar(100), リキュール、ソフトドリンク、その他
     description varchar(1000) DEFAULT '',
     vol int DEFAULT 0,
     primary key(ingredient_id)
@@ -13,6 +14,7 @@ CREATE TABLE cocktails(
     cocktail_id serial not null,
     name varchar(100),
     description varchar(1000) DEFAULT '',
+    -- category varchar(100), ショート、ロング、その他
     vol int DEFAULT 0,
     ingredient_count int DEFAULT 0,
     primary key(cocktail_id)
