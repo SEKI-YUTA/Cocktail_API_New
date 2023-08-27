@@ -1,14 +1,30 @@
 -- https://bipinparajuli.com.np/blog/many-to-many-relationship-in-postgresql
 CREATE DATABASE cocktail_db;
 \c cocktail_db
+
+CREATE TABLE ingredient_categories(
+    ingredient_category_id serial not null,
+    name varchar(100),
+    primary key(ingredient_category_id)
+);
+
+CREATE TABLE cocktail_categories(
+    cocktail_category_id serial not null,
+    name varchar(100),
+    primary key(cocktail_category_id)
+);
+
 CREATE TABLE ingredients(
     ingredient_id serial not null,
-    name varchar(100),
+    shortname varchar(100) DEFAULT '',
+    longname varchar(100) DEFAULT '',
     -- longName varchar(100), バーボンウィスキー
     -- shortName varchar(100), ウィスキー
     -- category varchar(100), リキュール、ソフトドリンク、その他
     description varchar(1000) DEFAULT '',
     vol int DEFAULT 0,
+    ingredient_category_id int,
+    foreign key(ingredient_category_id) references ingredient_categories(ingredient_category_id),
     primary key(ingredient_id)
 );
 
@@ -16,6 +32,10 @@ CREATE TABLE cocktails(
     cocktail_id serial not null,
     name varchar(100),
     description varchar(1000) DEFAULT '',
+    cocktail_category_id int,
+    foreign key(cocktail_category_id) references cocktail_categories(cocktail_category_id),
+    parent_cocktail_id int,
+    foreign key(parent_cocktail_id) references cocktails(cocktail_id),
     -- category varchar(100), ショート、ロング、その他
     -- parent 派生元がある場合、ホワイトレディ　-> サイドカーみたいな
     -- child 派生先がある場合、サイドカー　-> ホワイトレディみたいな
@@ -32,6 +52,15 @@ CREATE TABLE cocktail_ingredients(
     foreign key(ingredient_id) references ingredients(ingredient_id),
     -- CONSTRAINT cocktail_ingredients_pk PRIMARY KEY (cocktail_id, ingredient_id)
     primary key(cocktail_ingredient_id)
+);
+
+CREATE TABLE cocktail_parent_child(
+    cocktail_parent_child_id serial not null,
+    parent_id int,
+    child_id int,
+    foreign key(parent_id) references cocktails(cocktail_id),
+    foreign key(child_id) references cocktails(cocktail_id),
+    primary key(cocktail_parent_child_id)
 );
 
 -- insert into ingredients (name, isAlcohol) values ('ジン', TRUE);
