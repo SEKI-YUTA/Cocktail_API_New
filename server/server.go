@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4"
+	// "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -15,36 +15,36 @@ var pool *pgxpool.Pool
 
 
 func StartServer() {
-	fmt.Println("server.go start")
+	// fmt.Println("server.go start")
 
-	// fmt.Println("user name: " + first_user)
-	connConfig, err := pgx.ParseConfig(DB_URL)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to parse db config")
-		os.Exit(1)
-	}
+	// // fmt.Println("user name: " + first_user)
+	// connConfig, err := pgx.ParseConfig(DB_URL)
+	// if err != nil {
+	// 	fmt.Fprintf(os.Stderr, "failed to parse db config")
+	// 	os.Exit(1)
+	// }
 
-	poolConfig, err := pgxpool.ParseConfig("")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to parse pool config")
-		os.Exit(1)
-	}
-	poolConfig.ConnConfig = connConfig
+	// poolConfig, err := pgxpool.ParseConfig("")
+	// if err != nil {
+	// 	fmt.Fprintf(os.Stderr, "failed to parse pool config")
+	// 	os.Exit(1)
+	// }
+	// poolConfig.ConnConfig = connConfig
 
-	pool, err = pgxpool.ConnectConfig(context.Background(), poolConfig)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to connect to db")
-		os.Exit(1)
-	}
+	// pool, err = pgxpool.ConnectConfig(context.Background(), poolConfig)
+	// if err != nil {
+	// 	fmt.Fprintf(os.Stderr, "failed to connect to db")
+	// 	os.Exit(1)
+	// }
 
-	defer pool.Close()
+	// defer pool.Close()
 
-	fmt.Println("start app")
-	router := gin.Default()
-	router.GET("/ingredients", responseAllIngredients)
-	router.GET("/cocktails", responseCocktails)
-	router.Run("localhost:9090")
-	fmt.Println("end app")
+	// fmt.Println("start app")
+	// router := gin.Default()
+	// router.GET("/ingredients", responseAllIngredients)
+	// router.GET("/cocktails", responseCocktails)
+	// router.Run("localhost:9090")
+	// fmt.Println("end app")
 }
 
 func getAllIngredients() []common.Ingredient {
@@ -59,7 +59,7 @@ func getAllIngredients() []common.Ingredient {
 	ingredients := []common.Ingredient{}
 	for rows.Next() {
 		var i common.Ingredient
-		err := rows.Scan(&i.Name, &i.Description, &i.Vol)
+		err := rows.Scan(&i.ShortName, &i.Description, &i.Vol)
 		if err != nil {
 			fmt.Println("failed to scan data")
 		}
@@ -113,7 +113,7 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 		cocktailIngredientCountMap[cocktailName] = ingredientCount
 		cocktailIngredientMap[cocktailName] = append(
 			cocktailIngredientMap[cocktailName],
-			common.Ingredient{Name: ingredientName, Description: ingredientDescription, Vol: ingredientVol},
+			common.Ingredient{ShortName: ingredientName, Description: ingredientDescription, Vol: ingredientVol},
 		)
 	}
 
@@ -143,6 +143,11 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 	材料の配列の長さがカクテルの材料数と一致したら、そのカクテルは作れる
 	key: カクテル名 val []材料名
 	key: カクテル名 val 材料数
+	*/
+
+	/*
+	SELECT cocktails.name, c2.name from cocktails
+	INNER JOIN cocktails c2 ON c2.cocktail_id = cocktails.parent_id
 	*/
 
 	return craftableCocktailArr

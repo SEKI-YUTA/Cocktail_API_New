@@ -11,7 +11,8 @@ import (
 // 既に存在していた場合は０以外の値を返す
 func checkExists(
 	tableName string,
-	colName string,
+	idColName string,
+	nameColName string,
 	name string,
 	conn *pgx.Conn,
 ) int {
@@ -19,7 +20,7 @@ func checkExists(
 	var id int
 	conn.QueryRow(
 		context.Background(),
-		"SELECT " + colName + " FROM " + tableName + " WHERE name=$1",
+		"SELECT " + idColName + " FROM " + tableName + " WHERE " + nameColName + "=$1",
 		name).Scan(&id)
 	if(id == 0) {
 		fmt.Println("not exists: ", name)
@@ -29,7 +30,106 @@ func checkExists(
 	return id
 }
 
-func insertToJoinTable(cocktail_id int, ingredient_id int, conn *pgx.Conn) {
+func setUpCocktailCategoriesTable(conn *pgx.Conn) {
+	arr := []string{
+		cocktail_category_short,
+		cocktail_category_long,
+		cocktail_category_non_alcohol,
+	}
+	for _, name := range arr {
+		if(checkExists(cocktail_categories_table, "cocktail_category_id","name", name, conn)!=0) {
+			fmt.Println("already exists: ", name)
+			continue
+		}
+		// rows.Scanとかで値を取得しない時はExecを使う
+		// なぜならば、QueryやQueryRowはScanしないまま次のものに移るとconn busyというエラーが出るから
+		_, err := conn.Exec(
+			context.Background(),
+			"INSERT INTO cocktail_categories (name) VALUES ($1)",
+			name,
+		)
+		if(err != nil) {
+			fmt.Println("failed to insert: ", name)
+			fmt.Println(err)
+		}
+	}
+}
+
+func setUpIngredientCategoriesTable(conn *pgx.Conn) {
+	arr := []string{
+		ingredient_category_spirit,
+		ingredient_category_liqueur,
+		ingredient_category_softdrink,
+		ingredient_category_whisky,
+		ingredient_category_brandy,
+		ingredient_category_shothu,
+		ingredient_category_japanese_style_alcohol,
+	}
+	for _, name := range arr {
+		if(checkExists(ingredient_categories_table, "ingredient_category_id", "name", name, conn)!=0) {
+			fmt.Println("already exists: ", name)
+			continue
+		}
+		_, err := conn.Exec(
+			context.Background(),
+			"INSERT INTO ingredient_categories (name) VALUES ($1)",
+			name,
+		)
+		if(err != nil) {
+			fmt.Println("failed to insert: ", name)
+			fmt.Println(err)
+		}
+	}
+}
+
+func getCocktailCategoryId(name string, conn *pgx.Conn) int {
+	var id int
+	conn.QueryRow(
+		context.Background(),
+		"SELECT cocktail_category_id FROM cocktail_categories WHERE name=$1",
+		name).Scan(&id)
+	return id
+}
+
+func getIngredientCategoryId(name string, conn *pgx.Conn) int {
+	var id int
+	conn.QueryRow(
+		context.Background(),
+		"SELECT ingredient_category_id FROM ingredient_categories WHERE name=$1",
+		name).Scan(&id)
+	return id
+}
+
+func insertCocktailParentId(conn *pgx.Conn) {
+	for _, cocktail := range CocktailArr {
+		parentName := cocktail.ParentName
+		fmt.Println("parentName: ", parentName)
+		if(parentName == "") {
+			// 親がないので何もしない
+		} else {
+			parentId := 0
+			rows := conn.QueryRow(
+				context.Background(),
+				"SELECT cocktail_id FROM cocktails WHERE name=$1",
+				parentName,
+			)
+			// if err != nil {
+			// 	fmt.Println("failed to get parent id: ", parentName)
+			// 	fmt.Println(err)
+			// }
+			rows.Scan(&parentId)
+			fmt.Println("parentId: ", parentId)
+			conn.Exec(
+				context.Background(),
+				"UPDATE cocktails SET parent_cocktail_id=$1 WHERE name=$2",
+				parentId, cocktail.Name,
+			)
+			
+		}
+	}
+}
+
+func insertToCocktailIngredientsTable(cocktail_id int, ingredient_id int, conn *pgx.Conn) {
 	fmt.Println("中間テーブルへ挿入 cocktail_id: ", cocktail_id, " ingredient_id: ", ingredient_id)
 			cocktail_ingredient_id := 0
 			conn.QueryRow(
@@ -51,44 +151,61 @@ func StartSetUp() {
 	}
 	defer conn.Close(context.Background())
 
+	// 先にカテゴリテーブルのデータを挿入
+	setUpCocktailCategoriesTable(conn)
+	setUpIngredientCategoriesTable(conn)
+
 	for _, cocktail := range CocktailArr {
 		// var cocktail_id int
 		// var name string
 		cocktail_id := 0
+		cocktail_category_id := 0
 		name := ""
-		fmt.Println("カクテル挿入 ", cocktail.Name, " ", cocktail.Description, " ", cocktail.IngredientCount, " ", cocktail.Vol)
-		if(checkExists(cocktail_table,"cocktail_id" ,cocktail.Name, conn)!=0) {
+		// fmt.Println("カクテル挿入 ", cocktail.Name, " ", cocktail.Description, " ", cocktail.IngredientCount, " ", cocktail.Vol)
+		if(checkExists(cocktail_table,"cocktail_id", "name" ,cocktail.Name, conn)!=0) {
 			fmt.Println("already exists: ", cocktail.Name)
 			continue
 		}
+		cocktail_category_id = getCocktailCategoryId(cocktail.Category, conn)
+		fmt.Println("category_id: ", cocktail_category_id)
 		rows := conn.QueryRow(
 			context.Background(),
-			"INSERT INTO cocktails (name, description, ingredient_count, vol) VALUES ($1, $2, $3, $4) RETURNING cocktail_id, name",
-			cocktail.Name, cocktail.Description, cocktail.IngredientCount, cocktail.Vol,
+			"INSERT INTO cocktails (name, description, cocktail_category_id, vol, ingredient_count) VALUES ($1, $2, $3, $4, $5) RETURNING cocktail_id, name",
+			cocktail.Name, cocktail.Description, cocktail_category_id, cocktail.Vol, cocktail.IngredientCount,
 		)
+		if(err != nil) {
+			fmt.Println("failed to insert: ", cocktail.Name)
+			fmt.Println(err)
+		}
 		rows.Scan(&cocktail_id, &name)
 		fmt.Println("inserted cocktail id: ", cocktail_id, "name: ", name)
 
 		ingredients := cocktail.Ingredients
 		fmt.Println("ingredients: ", ingredients)
 		for _, ingredient := range ingredients {
-			ingredient_id := checkExists(ingredient_table, "ingredient_id", ingredient.Name, conn)
+			ingredient_id := checkExists(ingredient_table, "ingredient_id", "longname", ingredient.LongName, conn)
+			longname := ""
 			if(ingredient_id!= 0) {
-				fmt.Println("already exists: ", ingredient.Name)
-				insertToJoinTable(cocktail_id, ingredient_id, conn)
+				fmt.Println("already exists: ", ingredient.LongName)
+				insertToCocktailIngredientsTable(cocktail_id, ingredient_id, conn)
 				continue
 			}
+			ingredient_category_id := getIngredientCategoryId(ingredient.Category, conn)
 			conn.QueryRow(
 				context.Background(),
-				"INSERT INTO ingredients (name, description, vol) VALUES ($1, $2, $3) RETURNING ingredient_id, name",
-				ingredient.Name, ingredient.Description, ingredient.Vol,
-			).Scan(&ingredient_id, &name)
-			fmt.Println("inserted ingredient id: ", ingredient_id, "name: ", name)
+				"INSERT INTO ingredients (shortname, longname, description, vol, ingredient_category_id) VALUES ($1, $2, $3, $4, $5) RETURNING ingredient_id, longname",
+				ingredient.ShortName, ingredient.LongName, ingredient.Description, ingredient.Vol, ingredient_category_id,
+			).Scan(&ingredient_id, &longname)
+			fmt.Println("inserted ingredient id: ", ingredient_id, "longname: ", longname)
 			// ingredient_id_arr = append(ingredient_id_arr, ingredient_id)
 
-			insertToJoinTable(cocktail_id, ingredient_id, conn)
+			insertToCocktailIngredientsTable(cocktail_id, ingredient_id, conn)
 		}
 
 		fmt.Println("\n")
 	}
+
+	// 挿入するときにこの処理をしようとすると親になるカクテルが絶対先に処理しなくてはいけないようになるので数が増えると大変
+	// 親のカクテルのIDを挿入する処理
+	insertCocktailParentId(conn)
 }
