@@ -53,7 +53,8 @@ func getAllIngredients() []common.Ingredient {
 	INNER JOIN ingredient_categories ic ON  ingredients.ingredient_category_id=ic.ingredient_category_id
 	*/
 	rows, err := pool.Query(context.Background(),
-	"select ingredient_id, shortname, longname, description, vol, ic.ingredient_category_id, ic.name from ingredients INNER JOIN ingredient_categories ic ON  ingredients.ingredient_category_id=ic.ingredient_category_id;")
+	"SELECT ingredient_id, shortname, longname, description, vol, ic.ingredient_category_id, ic.name FROM ingredients " +
+	"INNER JOIN ingredient_categories ic ON  ingredients.ingredient_category_id=ic.ingredient_category_id;")
 	// rows, err := conn.Query(context.Background(),"select * from user_list;")
 	// err = conn.QueryRow(context.Background(), "select name from user_list where id = 1;").Scan(&first_user)
 	// defer rows.Close()
@@ -76,8 +77,9 @@ func queryCocktailById(id int) common.Cocktail {
 	cocktail := common.Cocktail{}
 	pool.QueryRow(
 		context.Background(),
-		"SELECT cocktail_id, cocktails.name, description, cc.cocktail_category_id, cocktails.vol, ingredient_count, parent_cocktail_id from cocktails " +
-		"INNER JOIN cocktail_categories cc ON cocktails.cocktail_category_id=cc.cocktail_category_id WHERE cocktails.cocktail_id=$1",
+		"SELECT cocktail_id, cocktails.name, description, cc.cocktail_category_id, cocktails.vol, ingredient_count, parent_cocktail_id FROM cocktails " +
+		"INNER JOIN cocktail_categories cc ON cocktails.cocktail_category_id=cc.cocktail_category_id " +
+		"WHERE cocktails.cocktail_id=$1",
 		id,
 		).Scan(&cocktail.CocktailId, &cocktail.Name, &cocktail.Description, &cocktail.CocktailCategoryId, &cocktail.Vol, &cocktail.IngredientCount, &cocktail.ParentCocktailId)
 		fmt.Println("parentCocktail name ", cocktail.Name)
@@ -125,7 +127,7 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 	cocktailIngredientCountMap := map[string]int{}
 	rows, err := pool.Query(
 		context.Background(),
-		"select c.name, c.ingredient_count, ic.name, i.ingredient_id, i.shortname, i.longname, i.description, i.vol, i.ingredient_category_id from cocktail_ingredients " +
+		"SELECT c.name, c.ingredient_count, ic.name, i.ingredient_id, i.shortname, i.longname, i.description, i.vol, i.ingredient_category_id FROM cocktail_ingredients " +
 		"INNER JOIN ingredients i ON i.ingredient_id = cocktail_ingredients.ingredient_id " +
 		"INNER JOIN cocktails c ON c.cocktail_id = cocktail_ingredients.cocktail_id " +
 		"INNER JOIN ingredient_categories ic ON i.ingredient_category_id = ic.ingredient_category_id " +
