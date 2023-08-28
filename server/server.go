@@ -48,16 +48,9 @@ func StartServer() {
 }
 
 func getAllIngredients() []common.Ingredient {
-	/*
-	select * from ingredients 
-	INNER JOIN ingredient_categories ic ON  ingredients.ingredient_category_id=ic.ingredient_category_id
-	*/
 	rows, err := pool.Query(context.Background(),
 	"SELECT ingredient_id, shortname, longname, description, vol, ic.ingredient_category_id, ic.name FROM ingredients " +
 	"INNER JOIN ingredient_categories ic ON  ingredients.ingredient_category_id=ic.ingredient_category_id;")
-	// rows, err := conn.Query(context.Background(),"select * from user_list;")
-	// err = conn.QueryRow(context.Background(), "select name from user_list where id = 1;").Scan(&first_user)
-	// defer rows.Close()
 	if err != nil {
 		os.Exit(1)
 	}
@@ -95,8 +88,6 @@ func queryCocktail(cocktailName string) common.Cocktail {
 		"SELECT cocktail_id, cocktails.name, description, cc.cocktail_category_id, cc.name, cocktails.vol, ingredient_count, parent_cocktail_id from cocktails " +
 		"INNER JOIN cocktail_categories cc ON cocktails.cocktail_category_id=cc.cocktail_category_id " +
 		"WHERE cocktails.name=" + "'" + cocktailName + "';",
-		// "select cocktails.name, description, vol from cocktails where name = $1;",
-		// ).Scan(&cocktail.Name, &cocktail.Description, &cocktail.Vol)
 		).Scan(&cocktail.CocktailId, &cocktail.Name, &cocktail.Description, &cocktail.CocktailCategoryId, &cocktail.Category, &cocktail.Vol, &cocktail.IngredientCount, &cocktail.ParentCocktailId)
 
 	if(cocktail.ParentCocktailId != 0) {
@@ -161,7 +152,6 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 	craftableCocktailArr := []*common.Cocktail{}
 	for key, ingredientArr := range cocktailIngredientMap {
 		ingredientCount := cocktailIngredientCountMap[key]
-		// fmt.Println("key: ", key, " ingredientCount: ", ingredientCount, " ingredientArr: ", ingredientArr)
 		if len(ingredientArr) == ingredientCount {
 			fmt.Println(key + "を作れるよ！")
 			cocktail := queryCocktail(key)
@@ -186,10 +176,6 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 	key: カクテル名 val 材料数
 	*/
 
-	/*
-	SELECT cocktails.name, c2.name from cocktails
-	INNER JOIN cocktails c2 ON c2.cocktail_id = cocktails.parent_id
-	*/
 
 	return craftableCocktailArr
 }
