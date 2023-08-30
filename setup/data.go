@@ -61,34 +61,53 @@ const ingredient_categories_table string = "ingredient_categories"
 const ingredient_table string = "ingredients"
 
 var WhiteCuracao = IngredientFactory("キュラソー", "ホワイトキュラソー", "", ingredient_category_spirit,40)
-
 var Gin = IngredientFactory("ジン", "ドライ・ジン", "", ingredient_category_spirit, 40)
 var Vodka = IngredientFactory("ウォッカ", "ウォッカ", "", ingredient_category_spirit, 40)
-var Ram = IngredientFactory("ラム", "ホワイトラム", "", ingredient_category_spirit, 40)
-// var Whiskey = IngredientFactory("ウィスキー", "", 40)
+var WhiteRam = IngredientFactory("ラム", "ホワイトラム", "", ingredient_category_spirit, 40)
+var DarkRam = IngredientFactory("ラム", "ダークラム", "", ingredient_category_spirit, 40)
+var Whiskey = IngredientFactory("ウィスキー", "バーボンウィスキー", "", ingredient_category_whisky, 40)
 // var Curacao = IngredientFactory("キュラソー", "", 40)
 // var Tequila = IngredientFactory("テキーラ", "", 40)
 // var Vermouth = IngredientFactory("ベルモット", "", 15)
-// var Cassis = IngredientFactory("カシス", "", 15)
+var Cassis = IngredientFactory("カシス", "カシス", "", ingredient_category_liqueur, 15)
 // var fuzzyNavel = IngredientFactory("ファジーネーブル", "", 15)
 // var PlumWine = IngredientFactory("梅酒", "", 40)
 var Brandy = IngredientFactory("ブランデー", "コニャック", "", ingredient_category_brandy, 40)
 // var Beer = IngredientFactory("ビール", "", 0)
 var GigerAle = IngredientFactory("ジンジャーエール", "ジンジャーエール", "ジンジャーの味がする炭酸飲料", ingredient_category_softdrink, 0)
-// var OrangeJuice = IngredientFactory("オレンジジュース", "", 0)
+var OrangeJuice = IngredientFactory("オレンジジュース", "オレンジジュース", "", ingredient_category_softdrink, 0)
 var LemonJuice = IngredientFactory("レモンジュース", "レモンジュース", "", ingredient_category_softdrink, 0)
-// var LimeJuice = IngredientFactory("ライムジュース", "", 0)
-// var TonicWater = IngredientFactory("トニックウォーター", "", 0)
+var GrenadineSyrup = IngredientFactory("グレナデンシロップ", "グレナデンシロップ", "", ingredient_category_softdrink, 0)
+var LimeJuice = IngredientFactory("ライムジュース", "ライムジュース", "", ingredient_category_softdrink, 0)
+var TonicWater = IngredientFactory("トニックウォーター", "トニックウォーター", "", ingredient_category_softdrink, 0)
 
 var CocktailArr = []*common.Cocktail{
-	CocktailFactory("ジンバッグ", cocktail_category_long , "ジンベースのカクテル", 15, "", 2, []common.Ingredient{
+	CocktailFactory("ジンバッグ", cocktail_category_long , "ジンベースのカクテル", 10, "", 2, []common.Ingredient{
 		*Gin, *GigerAle,
+	}),
+	CocktailFactory("ジントニック", cocktail_category_long , "ジンベースのカクテル", 10, "", 2, []common.Ingredient{
+		*Gin, *TonicWater,
+	}),
+	CocktailFactory("スクリュードライバー", cocktail_category_long , "ウォッカベースのカクテル", 10, "", 2, []common.Ingredient{
+		*Vodka, *OrangeJuice,
+	}),
+	CocktailFactory("モスコミュール", cocktail_category_long , "ウォッカベースのカクテル", 10, "", 3, []common.Ingredient{
+		*Vodka, *GigerAle, *LimeJuice,
+	}),
+	CocktailFactory("ラムバック", cocktail_category_long , "", 10, "", 2, []common.Ingredient{
+		*WhiteRam, *GigerAle,
+	}),
+	CocktailFactory("ラムバック", cocktail_category_long , "", 10, "", 2, []common.Ingredient{
+		*DarkRam, *GigerAle,
 	}),
 	CocktailFactory("サイドカー", cocktail_category_short , "", 20, "", 3, []common.Ingredient{
 		*Brandy, *WhiteCuracao, *LemonJuice,
 	}),
 	CocktailFactory("ホワイトレディー", cocktail_category_short , "ジンベースのカクテル", 20, "サイドカー", 3, []common.Ingredient{
 		*Gin, *WhiteCuracao, *LemonJuice,
+	}),
+	CocktailFactory("シャーリーテンプル", cocktail_category_long , "ノンアルコールのカクテル", 0, "", 2, []common.Ingredient{
+		*GigerAle, *GrenadineSyrup,
 	}),
 	// CocktailFactory("スクリュードライバー", "ウォッカベースのカクテル", 15, 2, []common.Ingredient{
 	// 	*Vodka, *OrangeJuice,
