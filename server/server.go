@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
@@ -76,6 +78,11 @@ func queryCocktailById(id int) common.Cocktail {
 		id,
 		).Scan(&cocktail.CocktailId, &cocktail.Name, &cocktail.Description, &cocktail.CocktailCategoryId, &cocktail.Vol, &cocktail.IngredientCount, &cocktail.ParentCocktailId)
 		fmt.Println("parentCocktail name ", cocktail.Name)
+	pool.QueryRow(
+		context.Background(),
+		"SELECT name FROM cocktail_categories WHERE cocktail_category_id=$1",
+		cocktail.CocktailCategoryId,
+	).Scan(&cocktail.Category)
 	return cocktail
 }
 
@@ -118,7 +125,7 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 	cocktailIngredientCountMap := map[string]int{}
 	rows, err := pool.Query(
 		context.Background(),
-		"SELECT c.name, c.ingredient_count, ic.name, i.ingredient_id, i.shortname, i.longname, i.description, i.vol, i.ingredient_category_id FROM cocktail_ingredients " +
+		"SELECT c.cocktail_id, c.name, c.ingredient_count, ic.name, i.ingredient_id, i.shortname, i.longname, i.description, i.vol, i.ingredient_category_id FROM cocktail_ingredients " +
 		"INNER JOIN ingredients i ON i.ingredient_id = cocktail_ingredients.ingredient_id " +
 		"INNER JOIN cocktails c ON c.cocktail_id = cocktail_ingredients.cocktail_id " +
 		"INNER JOIN ingredient_categories ic ON i.ingredient_category_id = ic.ingredient_category_id " +
@@ -132,6 +139,7 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 
 	for rows.Next() {
 		fmt.Println("rows.Next()")
+		cocktailId := 0
 		cocktailName := ""
 		ingredientCount := 0
 		ingredientCategory := ""
@@ -141,20 +149,28 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 		ingredientDescription := ""
 		ingredientVol := 0
 		ingredientCategoryId := 0
-		rows.Scan(&cocktailName, &ingredientCount, &ingredientCategory, &ingredientId, &ingredientShortName, &ingredientLongName, &ingredientDescription, &ingredientVol, &ingredientCategoryId)
-		cocktailIngredientCountMap[cocktailName] = ingredientCount
-		cocktailIngredientMap[cocktailName] = append(
-			cocktailIngredientMap[cocktailName],
+		rows.Scan(&cocktailId, &cocktailName, &ingredientCount, &ingredientCategory, &ingredientId, &ingredientShortName, &ingredientLongName, &ingredientDescription, &ingredientVol, &ingredientCategoryId)
+		cocktailIngredientCountMap[cocktailName + "-" + strconv.Itoa(cocktailId)] = ingredientCount
+		cocktailIngredientMap[cocktailName + "-" + strconv.Itoa(cocktailId)] = append(
+			cocktailIngredientMap[cocktailName + "-" + strconv.Itoa(cocktailId)],
 			common.Ingredient{IngredientId: ingredientId,Category: ingredientCategory, ShortName: ingredientShortName, LongName: ingredientLongName, Description: ingredientDescription, Vol: ingredientVol, IngredientCategoryId: ingredientCategoryId},
 		)
 	}
+	fmt.Printf("cocktailIngredientMap: %v\n", cocktailIngredientMap)
+	fmt.Printf("cocktailIngredientCountMap: %v\n", cocktailIngredientCountMap)
 
 	craftableCocktailArr := []*common.Cocktail{}
 	for key, ingredientArr := range cocktailIngredientMap {
 		ingredientCount := cocktailIngredientCountMap[key]
+		fmt.Println(key + "の材料数: ", len(ingredientArr), " 必要な材料数: ", ingredientCount)
 		if len(ingredientArr) == ingredientCount {
 			fmt.Println(key + "を作れるよ！")
-			cocktail := queryCocktail(key)
+			sp := strings.Split(key, "-")
+			id, err := strconv.Atoi(sp[1])
+			if err != nil {
+				
+			}
+			cocktail := queryCocktailById(id)
 			cocktail.Ingredients = ingredientArr
 			craftableCocktailArr = append(craftableCocktailArr, &cocktail)
 		}
