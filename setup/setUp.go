@@ -171,7 +171,6 @@ func getIngredientCategoryId(name string, conn *pgx.Conn) int {
 func insertCocktailParentId(conn *pgx.Conn) {
 	for _, cocktail := range CocktailArr {
 		parentName := cocktail.ParentName
-		fmt.Println("parentName: ", parentName)
 		if(parentName == "") {
 			// 親がないので何もしない
 		} else {
@@ -182,7 +181,6 @@ func insertCocktailParentId(conn *pgx.Conn) {
 				parentName,
 			)
 			rows.Scan(&parentId)
-			fmt.Println("parentId: ", parentId)
 			conn.Exec(
 				context.Background(),
 				"UPDATE cocktails SET parent_cocktail_id=$1 WHERE name=$2",
@@ -201,7 +199,6 @@ func insertToCocktailIngredientsTable(cocktail_id int, ingredient_id int, conn *
 				"INSERT INTO cocktail_ingredients (cocktail_id, ingredient_id) VALUES ($1, $2) RETURNING cocktail_ingredient_id",
 				cocktail_id, ingredient_id,
 			).Scan(&cocktail_ingredient_id)
-			fmt.Println("cocktail_ingredient_id: ", cocktail_ingredient_id)
 }
 
 func StartSetUp() {
@@ -209,7 +206,6 @@ func StartSetUp() {
 
 	conn, err := pgx.Connect(context.Background(), dbURL)
 	if err != nil {
-		fmt.Println("XXXXX")
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
@@ -263,7 +259,6 @@ func StartSetUp() {
 			insertToCocktailIngredientsTable(cocktail_id, ingredient_id, conn)
 		}
 
-		fmt.Println("\n")
 	}
 
 	// 挿入するときにこの処理をしようとすると親になるカクテルが絶対先に処理しなくてはいけないようになるので数が増えると大変

@@ -42,7 +42,7 @@ func StartServer() {
 	fmt.Println("start app")
 	router := gin.Default()
 	router.GET("/ingredients", responseAllIngredients)
-	router.GET("/cocktails", responseCocktails)
+	router.GET("/cocktails/*filter", responseCocktails)
 	router.Run("localhost:9090")
 	fmt.Println("end app")
 }
@@ -136,7 +136,6 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 	}
 
 	for rows.Next() {
-		fmt.Println("rows.Next()")
 		cocktailId := 0
 		cocktailName := ""
 		ingredientCount := 0
@@ -157,9 +156,7 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 	craftableCocktailArr := []*common.Cocktail{}
 	for key, ingredientArr := range cocktailIngredientMap {
 		ingredientCount := cocktailIngredientCountMap[key]
-		fmt.Println(key + "の材料数: ", len(ingredientArr), " 必要な材料数: ", ingredientCount)
 		if len(ingredientArr) == ingredientCount {
-			fmt.Println(key + "を作れるよ！")
 			sp := strings.Split(key, "-")
 			id, err := strconv.Atoi(sp[1])
 			if err != nil {
@@ -170,11 +167,6 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 			craftableCocktailArr = append(craftableCocktailArr, &cocktail)
 		}
 	}
-
-	for _, cocktail := range craftableCocktailArr {
-		fmt.Println(cocktail)
-	}
-
 	/*
 	select c.name, c.vol, c.ingredient_count, i.name from cocktail_ingredients
 	INNER JOIN ingredients i ON i.ingredient_id = cocktail_ingredients.ingredient_id
@@ -197,6 +189,8 @@ func responseAllIngredients(ctx *gin.Context) {
 }
 
 func responseCocktails(ctx *gin.Context) {
+	filter := strings.Replace(ctx.Param("filter"), "/", "", -1)
+	fmt.Println("filter: ", filter)
 	query := ctx.Request.URL.Query()
 	availableIngredients := query["ingredients[]"]
 	fmt.Println("availableIngredients: ", availableIngredients)
