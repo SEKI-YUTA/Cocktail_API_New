@@ -18,8 +18,6 @@ var pool *pgxpool.Pool
 
 func StartServer() {
 	fmt.Println("server.go start")
-
-	// fmt.Println("user name: " + first_user)
 	connConfig, err := pgx.ParseConfig(DB_URL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to parse db config")
@@ -156,9 +154,6 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 			common.Ingredient{IngredientId: ingredientId,Category: ingredientCategory, ShortName: ingredientShortName, LongName: ingredientLongName, Description: ingredientDescription, Vol: ingredientVol, IngredientCategoryId: ingredientCategoryId},
 		)
 	}
-	fmt.Printf("cocktailIngredientMap: %v\n", cocktailIngredientMap)
-	fmt.Printf("cocktailIngredientCountMap: %v\n", cocktailIngredientCountMap)
-
 	craftableCocktailArr := []*common.Cocktail{}
 	for key, ingredientArr := range cocktailIngredientMap {
 		ingredientCount := cocktailIngredientCountMap[key]
@@ -205,8 +200,6 @@ func responseCocktails(ctx *gin.Context) {
 	query := ctx.Request.URL.Query()
 	availableIngredients := query["ingredients[]"]
 	fmt.Println("availableIngredients: ", availableIngredients)
-	fmt.Printf("type: %T\n ", availableIngredients)
-
 	cocktails := computeCraftableCocktails(availableIngredients)
 
 	ctx.JSON(200, cocktails)

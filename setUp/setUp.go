@@ -181,10 +181,6 @@ func insertCocktailParentId(conn *pgx.Conn) {
 				"SELECT cocktail_id FROM cocktails WHERE name=$1",
 				parentName,
 			)
-			// if err != nil {
-			// 	fmt.Println("failed to get parent id: ", parentName)
-			// 	fmt.Println(err)
-			// }
 			rows.Scan(&parentId)
 			fmt.Println("parentId: ", parentId)
 			conn.Exec(
@@ -224,12 +220,9 @@ func StartSetUp() {
 	setUpIngredientCategoriesTable(conn)
 
 	for _, cocktail := range CocktailArr {
-		// var cocktail_id int
-		// var name string
 		cocktail_id := 0
 		cocktail_category_id := 0
 		name := ""
-		// fmt.Println("カクテル挿入 ", cocktail.Name, " ", cocktail.Description, " ", cocktail.IngredientCount, " ", cocktail.Vol)
 		if(checkExistsCocktail(cocktail,conn)!=0) {
 			fmt.Println("already exists: ", cocktail.Name)
 			continue
