@@ -42,6 +42,7 @@ func StartServer() {
 	fmt.Println("start app")
 	router := gin.Default()
 	router.GET("/ingredients", responseAllIngredients)
+	// filter short, long, non_alcohol
 	router.GET("/cocktails/*filter", responseCocktails)
 	router.Run("localhost:9090")
 	fmt.Println("end app")
@@ -99,8 +100,17 @@ func queryCocktail(cocktailName string) common.Cocktail {
 		fmt.Println("parentCocktailId: ", cocktail.ParentCocktailId)
 		cocktail.ParentName = queryCocktailById(cocktail.ParentCocktailId).Name
 	}
-
 	return cocktail
+}
+
+func queryCocktailCategoryId(categoryName string) int {
+	id := 0
+	pool.QueryRow(
+		context.Background(),
+		"SELECT cocktail_category_id FROM cocktail_categories WHERE name=" + "'" + categoryName + "'",
+	).Scan(&id)
+	fmt.Println("categoryName: ", categoryName, " id: ", id)
+	return id
 }
 
 func getQueryString(availableIngredients []string) string {
@@ -115,9 +125,31 @@ func getQueryString(availableIngredients []string) string {
 	return "(" + queryStr + ")"
 }
 
-func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail {
+func computeCraftableCocktails(availableIngredients []string, filter string) []*common.Cocktail {
+	// 既に持っている材料のクエリを作る
 	queryStr := getQueryString(availableIngredients)
 	fmt.Println("queryStr: ", queryStr)
+
+	// フィルタがある場合はフィルタをかける
+	filterStr := ""
+	categiryId := 0
+	switch filter {
+		case "short":
+			categiryId = queryCocktailCategoryId("ショートカクテル")
+			filterStr = " AND c.cocktail_category_id = " + strconv.Itoa(categiryId)
+			break
+		case "long":
+			categiryId = queryCocktailCategoryId("ロングカクテル")
+			filterStr = " AND c.cocktail_category_id = " + strconv.Itoa(categiryId)
+			break
+		case "non_alcohol":
+			filterStr = " AND c.vol = 0"
+			break
+		default:
+			break
+	}
+	fmt.Println("filterStr: ", filterStr)
+
 
 	cocktailIngredientMap := map[string][]common.Ingredient{}
 	cocktailIngredientCountMap := map[string]int{}
@@ -127,7 +159,7 @@ func computeCraftableCocktails(availableIngredients []string) []*common.Cocktail
 		"INNER JOIN ingredients i ON i.ingredient_id = cocktail_ingredients.ingredient_id " +
 		"INNER JOIN cocktails c ON c.cocktail_id = cocktail_ingredients.cocktail_id " +
 		"INNER JOIN ingredient_categories ic ON i.ingredient_category_id = ic.ingredient_category_id " +
-		"WHERE i.longname IN " + queryStr,
+		"WHERE i.longname IN " + queryStr + filterStr,
 	)
 
 	if err != nil {
@@ -194,7 +226,7 @@ func responseCocktails(ctx *gin.Context) {
 	query := ctx.Request.URL.Query()
 	availableIngredients := query["ingredients[]"]
 	fmt.Println("availableIngredients: ", availableIngredients)
-	cocktails := computeCraftableCocktails(availableIngredients)
+	cocktails := computeCraftableCocktails(availableIngredients, filter)
 
 	ctx.JSON(200, cocktails)
 }

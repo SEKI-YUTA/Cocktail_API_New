@@ -106,7 +106,7 @@ var CocktailArr = []*common.Cocktail{
 	CocktailFactory("ホワイトレディー", cocktail_category_short , "ジンベースのカクテル", 20, "サイドカー", 3, []common.Ingredient{
 		*Gin, *WhiteCuracao, *LemonJuice,
 	}),
-	CocktailFactory("シャーリーテンプル", cocktail_category_long , "ノンアルコールのカクテル", 0, "", 2, []common.Ingredient{
+	CocktailFactory("シャーリーテンプル", cocktail_category_non_alcohol , "ノンアルコールのカクテル", 0, "", 2, []common.Ingredient{
 		*GigerAle, *GrenadineSyrup,
 	}),
 	// CocktailFactory("スクリュードライバー", "ウォッカベースのカクテル", 15, 2, []common.Ingredient{
