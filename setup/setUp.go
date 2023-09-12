@@ -227,16 +227,11 @@ func StartSetUp() {
 		}
 		cocktail_category_id = getCocktailCategoryId(cocktail.Category, conn)
 		fmt.Println("category_id: ", cocktail_category_id)
-		row := conn.QueryRow(
+		conn.QueryRow(
 			context.Background(),
 			"INSERT INTO cocktails (name, description, cocktail_category_id, vol, ingredient_count) VALUES ($1, $2, $3, $4, $5) RETURNING cocktail_id, name",
 			cocktail.Name, cocktail.Description, cocktail_category_id, cocktail.Vol, cocktail.IngredientCount,
-		)
-		if(err != nil) {
-			fmt.Println("failed to insert: ", cocktail.Name)
-			fmt.Println(err)
-		}
-		row.Scan(&cocktail_id, &name)
+		).Scan(&cocktail_id, &name)
 		fmt.Println("inserted cocktail id: ", cocktail_id, "name: ", name)
 
 		ingredients := cocktail.Ingredients
