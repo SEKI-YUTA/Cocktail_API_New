@@ -7,13 +7,13 @@ import (
 	"os"
 	"reflect"
 	"sort"
-
+	// v5だとpoolができない
 	"github.com/jackc/pgx/v4"
 )
 
 /*
 この関数は同じ名前があれば既に存在していると判断して０以外の値を返す
-既に存在していた場合は０以外の値を返す
+既に存在していた場合は０以外の値を返す(id)
 */
 func checkExists(
 	tableName string,
@@ -58,7 +58,7 @@ func checkExistsCocktail(
 		}
 	}
 	if(len(idArr) == 0) {
-		// 名前で該当するカクテルがない＝存在していないと判断して０を返す
+		// この時点でidArrの長さが0であれば、名前で該当するカクテルがない＝存在していないと判断して０を返す
 		return 0
 	}
 
@@ -78,7 +78,8 @@ func checkExistsCocktail(
 		}
 		fmt.Println("ingredientNames: ", ingredientNames)
 		if(len(ingredientNames) != len(cocktail.Ingredients)) {
-			// 素材の数が違うので存在していないと判断して０を返す
+			// チェックを要求されたカクテルとデータベースを検索で見つかったカクテルと材料の数が違うので違うカクテルと判断する
+			// この部分でcontinenuされるのはカクテルの名前は同じだが材料の数が違う場合（そんなものがあるかは知らん）
 			continue
 		}
 		cocktailIngredientNames := []string{}
@@ -88,6 +89,7 @@ func checkExistsCocktail(
 		fmt.Println("cocktailIngredientNames: ", cocktailIngredientNames)
 		sort.Strings(ingredientNames)
 		sort.Strings(cocktailIngredientNames)
+		// この時点で材料の数が同じであることは保証されているのであとは材料の名前が全部同じかをチェックする
 		if(reflect.DeepEqual(ingredientNames, cocktailIngredientNames)) {
 			// 素材の名前が全て同じなので存在していると判断してidを返す
 			return id
@@ -97,6 +99,8 @@ func checkExistsCocktail(
 	}
 	return 0
 }
+// rows.Scanとかで値を取得しない時はExecを使う
+// QueryとかQueryRowを使用した際にScanを使用しないとconn busyというエラーがでる
 
 func setUpCocktailCategoriesTable(conn *pgx.Conn) {
 	arr := []string{
@@ -109,8 +113,6 @@ func setUpCocktailCategoriesTable(conn *pgx.Conn) {
 			fmt.Println("already exists: ", name)
 			continue
 		}
-		// rows.Scanとかで値を取得しない時はExecを使う
-		// なぜならば、QueryやQueryRowはScanしないまま次のものに移るとconn busyというエラーが出るから
 		_, err := conn.Exec(
 			context.Background(),
 			"INSERT INTO cocktail_categories (name) VALUES ($1)",
@@ -193,12 +195,12 @@ func insertCocktailParentId(conn *pgx.Conn) {
 
 func insertToCocktailIngredientsTable(cocktail_id int, ingredient_id int, conn *pgx.Conn) {
 	fmt.Println("中間テーブルへ挿入 cocktail_id: ", cocktail_id, " ingredient_id: ", ingredient_id)
-			cocktail_ingredient_id := 0
-			conn.QueryRow(
-				context.Background(),
-				"INSERT INTO cocktail_ingredients (cocktail_id, ingredient_id) VALUES ($1, $2) RETURNING cocktail_ingredient_id",
-				cocktail_id, ingredient_id,
-			).Scan(&cocktail_ingredient_id)
+	cocktail_ingredient_id := 0
+	conn.QueryRow(
+		context.Background(),
+		"INSERT INTO cocktail_ingredients (cocktail_id, ingredient_id) VALUES ($1, $2) RETURNING cocktail_ingredient_id",
+		cocktail_id, ingredient_id,
+	).Scan(&cocktail_ingredient_id)
 }
 
 func StartSetUp() {
@@ -225,16 +227,11 @@ func StartSetUp() {
 		}
 		cocktail_category_id = getCocktailCategoryId(cocktail.Category, conn)
 		fmt.Println("category_id: ", cocktail_category_id)
-		rows := conn.QueryRow(
+		conn.QueryRow(
 			context.Background(),
 			"INSERT INTO cocktails (name, description, cocktail_category_id, vol, ingredient_count) VALUES ($1, $2, $3, $4, $5) RETURNING cocktail_id, name",
 			cocktail.Name, cocktail.Description, cocktail_category_id, cocktail.Vol, cocktail.IngredientCount,
-		)
-		if(err != nil) {
-			fmt.Println("failed to insert: ", cocktail.Name)
-			fmt.Println(err)
-		}
-		rows.Scan(&cocktail_id, &name)
+		).Scan(&cocktail_id, &name)
 		fmt.Println("inserted cocktail id: ", cocktail_id, "name: ", name)
 
 		ingredients := cocktail.Ingredients
