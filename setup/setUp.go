@@ -177,12 +177,11 @@ func insertCocktailParentId(conn *pgx.Conn) {
 			// 親がないので何もしない
 		} else {
 			parentId := 0
-			rows := conn.QueryRow(
+			conn.QueryRow(
 				context.Background(),
 				"SELECT cocktail_id FROM cocktails WHERE name=$1",
 				parentName,
-			)
-			rows.Scan(&parentId)
+			).Scan(&parentId)
 			conn.Exec(
 				context.Background(),
 				"UPDATE cocktails SET parent_cocktail_id=$1 WHERE name=$2",
