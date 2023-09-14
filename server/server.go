@@ -51,7 +51,8 @@ func StartServer() {
 func getAllIngredients() []common.Ingredient {
 	rows, err := pool.Query(context.Background(),
 	"SELECT ingredient_id, shortname, longname, description, vol, ic.ingredient_category_id, ic.name FROM ingredients " +
-	"INNER JOIN ingredient_categories ic ON  ingredients.ingredient_category_id=ic.ingredient_category_id;")
+	"INNER JOIN ingredient_categories ic ON ingredients.ingredient_category_id=ic.ingredient_category_id " +
+	"ORDER BY ingredients.vol > 0 DESC, ingredients.ingredient_category_id ASC, ingredients.ingredient_id ASC;")
 	if err != nil {
 		os.Exit(1)
 	}
