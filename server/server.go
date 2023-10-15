@@ -38,13 +38,18 @@ func StartServer() {
 
 	defer pool.Close()
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	fmt.Println("start app")
 	router := gin.Default()
 	router.GET("/ingredients", responseAllIngredients)
 	// filter: short, long, non_alcohol
 	router.GET("/compute/cocktails/*filter", responseCraftableCocktails)
 	router.GET("/cocktails/all", responseAllCocktails)
-	router.Run("localhost:9090")
+	router.Run(":" + port)
 	fmt.Println("end app")
 }
 

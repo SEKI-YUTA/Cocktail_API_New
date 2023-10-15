@@ -1,5 +1,6 @@
 # Flyioにデプロイする方法
 [参考サイト](https://medium.com/data-folks-indonesia/setup-free-postgresql-on-fly-io-and-import-database-3f8f891cbc71)
+https://zenn.dev/kaorumori/articles/accfc9bd1ea785
 
 ## データベースを用意する方法
 1. flyctlをインストールする
