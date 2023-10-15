@@ -10,10 +10,12 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - ./init:/docker-entrypoint-initdb.d
+      - ./work:/work/
     restart: always
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
+    # working_dir: /work
     ports:
       - "5432:5432"
 

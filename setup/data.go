@@ -52,7 +52,8 @@ func IngredientFactory(
 	}
 }
 
-const dbURL string = "postgres://root:root@localhost:5432/cocktail_db"
+const dbURL string = "postgres://postgres:qoBHnemxz9MqfW4@localhost:5432/cocktail_db"
+// const dbURL string = "postgres://root:root@localhost:5432/cocktail_db"
 const cocktail_table string = "cocktails"
 const cocktail_categories_table string = "cocktail_categories"
 const ingredient_categories_table string = "ingredient_categories"
