@@ -42,8 +42,9 @@ func StartServer() {
 	fmt.Println("start app")
 	router := gin.Default()
 	router.GET("/ingredients", responseAllIngredients)
-	// filter short, long, non_alcohol
-	router.GET("/cocktails/*filter", responseCocktails)
+	// filter: short, long, non_alcohol
+	router.GET("/compute/cocktails/*filter", responseCraftableCocktails)
+	router.GET("/cocktails/all", responseAllCocktails)
 	router.Run("localhost:9090")
 	fmt.Println("end app")
 }
@@ -66,6 +67,56 @@ func getAllIngredients() []common.Ingredient {
 		ingredients = append(ingredients, i)
 	}
 	return ingredients
+}
+
+func getAllCocktails() []common.Cocktail {
+	cocktailIngredientMap := map[string][]common.Ingredient{}
+	cocktailIngredientCountMap := map[string]int{}
+	rows, err := pool.Query(
+		context.Background(),
+		"SELECT c.cocktail_id, c.name, c.ingredient_count, ic.name, i.ingredient_id, i.shortname, i.longname, i.description, i.vol, i.ingredient_category_id FROM cocktail_ingredients " +
+		"INNER JOIN ingredients i ON i.ingredient_id = cocktail_ingredients.ingredient_id " +
+		"INNER JOIN cocktails c ON c.cocktail_id = cocktail_ingredients.cocktail_id " +
+		"INNER JOIN ingredient_categories ic ON i.ingredient_category_id = ic.ingredient_category_id ",
+	)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to get craftableCocktail data %v\n", err)
+	}
+
+	for rows.Next() {
+		cocktailId := 0
+		cocktailName := ""
+		ingredientCount := 0
+		ingredientCategory := ""
+		ingredientId := 0
+		ingredientShortName := ""
+		ingredientLongName := ""
+		ingredientDescription := ""
+		ingredientVol := 0
+		ingredientCategoryId := 0
+		rows.Scan(&cocktailId, &cocktailName, &ingredientCount, &ingredientCategory, &ingredientId, &ingredientShortName, &ingredientLongName, &ingredientDescription, &ingredientVol, &ingredientCategoryId)
+		cocktailIngredientCountMap[cocktailName + "-" + strconv.Itoa(cocktailId)] = ingredientCount
+		cocktailIngredientMap[cocktailName + "-" + strconv.Itoa(cocktailId)] = append(
+			cocktailIngredientMap[cocktailName + "-" + strconv.Itoa(cocktailId)],
+			common.Ingredient{IngredientId: ingredientId,Category: ingredientCategory, ShortName: ingredientShortName, LongName: ingredientLongName, Description: ingredientDescription, Vol: ingredientVol, IngredientCategoryId: ingredientCategoryId},
+		)
+	}
+	allCocktailArr := []common.Cocktail{}
+	for key, ingredientArr := range cocktailIngredientMap {
+		ingredientCount := cocktailIngredientCountMap[key]
+		if len(ingredientArr) == ingredientCount {
+			sp := strings.Split(key, "-")
+			id, err := strconv.Atoi(sp[1])
+			if err != nil {
+				
+			}
+			cocktail := queryCocktailById(id)
+			cocktail.Ingredients = ingredientArr
+			allCocktailArr = append(allCocktailArr, cocktail)
+		}
+	}
+	return allCocktailArr
 }
 
 func queryCocktailById(id int) common.Cocktail {
@@ -221,7 +272,12 @@ func responseAllIngredients(ctx *gin.Context) {
 	ctx.JSON(200, ingredients)
 }
 
-func responseCocktails(ctx *gin.Context) {
+func responseAllCocktails(ctx *gin.Context) {
+	cocktails := getAllCocktails()
+	ctx.JSON(200, cocktails)
+}
+
+func responseCraftableCocktails(ctx *gin.Context) {
 	filter := strings.Replace(ctx.Param("filter"), "/", "", -1)
 	fmt.Println("filter: ", filter)
 	query := ctx.Request.URL.Query()
