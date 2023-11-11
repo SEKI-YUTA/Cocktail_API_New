@@ -7,6 +7,7 @@ import (
 	"os"
 	"reflect"
 	"sort"
+
 	// v5だとpoolができない
 	"github.com/jackc/pgx/v4"
 )
@@ -26,9 +27,9 @@ func checkExists(
 	var id int
 	conn.QueryRow(
 		context.Background(),
-		"SELECT " + idColName + " FROM " + tableName + " WHERE " + nameColName + "=$1",
+		"SELECT "+idColName+" FROM "+tableName+" WHERE "+nameColName+"=$1",
 		name).Scan(&id)
-	if(id == 0) {
+	if id == 0 {
 		fmt.Println("not exists: ", name)
 	} else {
 		fmt.Println("exists: ", name)
@@ -53,11 +54,11 @@ func checkExistsCocktail(
 	for rows1.Next() {
 		tmp := 0
 		rows1.Scan(&tmp)
-		if(tmp != 0) {
+		if tmp != 0 {
 			idArr = append(idArr, tmp)
 		}
 	}
-	if(len(idArr) == 0) {
+	if len(idArr) == 0 {
 		// この時点でidArrの長さが0であれば、名前で該当するカクテルがない＝存在していないと判断して０を返す
 		return 0
 	}
@@ -65,9 +66,9 @@ func checkExistsCocktail(
 	for _, id := range idArr {
 		rows, _ := conn.Query(
 			context.Background(),
-			"SELECT ingredients.longname FROM cocktail_ingredients " +
-			"INNER JOIN ingredients ON cocktail_ingredients.ingredient_id=ingredients.ingredient_id " +
-			"WHERE cocktail_ingredients.cocktail_id=$1",
+			"SELECT ingredients.longname FROM cocktail_ingredients "+
+				"INNER JOIN ingredients ON cocktail_ingredients.ingredient_id=ingredients.ingredient_id "+
+				"WHERE cocktail_ingredients.cocktail_id=$1",
 			id,
 		)
 		ingredientNames := []string{}
@@ -77,7 +78,7 @@ func checkExistsCocktail(
 			ingredientNames = append(ingredientNames, ingredientName)
 		}
 		fmt.Println("ingredientNames: ", ingredientNames)
-		if(len(ingredientNames) != len(cocktail.Ingredients)) {
+		if len(ingredientNames) != len(cocktail.Ingredients) {
 			// チェックを要求されたカクテルとデータベースを検索で見つかったカクテルと材料の数が違うので違うカクテルと判断する
 			// この部分でcontinenuされるのはカクテルの名前は同じだが材料の数が違う場合（そんなものがあるかは知らん）
 			continue
@@ -90,7 +91,7 @@ func checkExistsCocktail(
 		sort.Strings(ingredientNames)
 		sort.Strings(cocktailIngredientNames)
 		// この時点で材料の数が同じであることは保証されているのであとは材料の名前が全部同じかをチェックする
-		if(reflect.DeepEqual(ingredientNames, cocktailIngredientNames)) {
+		if reflect.DeepEqual(ingredientNames, cocktailIngredientNames) {
 			// 素材の名前が全て同じなので存在していると判断してidを返す
 			return id
 		} else {
@@ -99,6 +100,7 @@ func checkExistsCocktail(
 	}
 	return 0
 }
+
 // rows.Scanとかで値を取得しない時はExecを使う
 // QueryとかQueryRowを使用した際にScanを使用しないとconn busyというエラーがでる
 
@@ -109,7 +111,7 @@ func setUpCocktailCategoriesTable(conn *pgx.Conn) {
 		cocktail_category_non_alcohol,
 	}
 	for _, name := range arr {
-		if(checkExists(cocktail_categories_table, "cocktail_category_id","name", name, conn)!=0) {
+		if checkExists(cocktail_categories_table, "cocktail_category_id", "name", name, conn) != 0 {
 			fmt.Println("already exists: ", name)
 			continue
 		}
@@ -118,7 +120,7 @@ func setUpCocktailCategoriesTable(conn *pgx.Conn) {
 			"INSERT INTO cocktail_categories (name) VALUES ($1)",
 			name,
 		)
-		if(err != nil) {
+		if err != nil {
 			fmt.Println("failed to insert: ", name)
 			fmt.Println(err)
 		}
@@ -136,7 +138,7 @@ func setUpIngredientCategoriesTable(conn *pgx.Conn) {
 		ingredient_category_japanese_style_alcohol,
 	}
 	for _, name := range arr {
-		if(checkExists(ingredient_categories_table, "ingredient_category_id", "name", name, conn)!=0) {
+		if checkExists(ingredient_categories_table, "ingredient_category_id", "name", name, conn) != 0 {
 			fmt.Println("already exists: ", name)
 			continue
 		}
@@ -145,7 +147,7 @@ func setUpIngredientCategoriesTable(conn *pgx.Conn) {
 			"INSERT INTO ingredient_categories (name) VALUES ($1)",
 			name,
 		)
-		if(err != nil) {
+		if err != nil {
 			fmt.Println("failed to insert: ", name)
 			fmt.Println(err)
 		}
@@ -170,27 +172,27 @@ func getIngredientCategoryId(name string, conn *pgx.Conn) int {
 	return id
 }
 
-func insertCocktailParentId(conn *pgx.Conn) {
-	for _, cocktail := range CocktailArr {
-		parentName := cocktail.ParentName
-		if(parentName == "") {
-			// 親がないので何もしない
-		} else {
-			parentId := 0
-			conn.QueryRow(
-				context.Background(),
-				"SELECT cocktail_id FROM cocktails WHERE name=$1",
-				parentName,
-			).Scan(&parentId)
-			conn.Exec(
-				context.Background(),
-				"UPDATE cocktails SET parent_cocktail_id=$1 WHERE name=$2",
-				parentId, cocktail.Name,
-			)
-			
-		}
-	}
-}
+// func insertCocktailParentId(conn *pgx.Conn) {
+// 	for _, cocktail := range CocktailArr {
+// 		parentName := cocktail.ParentName
+// 		if(parentName == "") {
+// 			// 親がないので何もしない
+// 		} else {
+// 			parentId := 0
+// 			conn.QueryRow(
+// 				context.Background(),
+// 				"SELECT cocktail_id FROM cocktails WHERE name=$1",
+// 				parentName,
+// 			).Scan(&parentId)
+// 			conn.Exec(
+// 				context.Background(),
+// 				"UPDATE cocktails SET parent_cocktail_id=$1 WHERE name=$2",
+// 				parentId, cocktail.Name,
+// 			)
+
+// 		}
+// 	}
+// }
 
 func insertToCocktailIngredientsTable(cocktail_id int, ingredient_id int, conn *pgx.Conn) {
 	fmt.Println("中間テーブルへ挿入 cocktail_id: ", cocktail_id, " ingredient_id: ", ingredient_id)
@@ -220,7 +222,7 @@ func StartSetUp() {
 		cocktail_id := 0
 		cocktail_category_id := 0
 		name := ""
-		if(checkExistsCocktail(cocktail,conn)!=0) {
+		if checkExistsCocktail(cocktail, conn) != 0 {
 			fmt.Println("already exists: ", cocktail.Name)
 			continue
 		}
@@ -238,7 +240,7 @@ func StartSetUp() {
 		for _, ingredient := range ingredients {
 			ingredient_id := checkExists(ingredient_table, "ingredient_id", "longname", ingredient.LongName, conn)
 			longname := ""
-			if(ingredient_id!= 0) {
+			if ingredient_id != 0 {
 				fmt.Println("already exists: ", ingredient.LongName)
 				insertToCocktailIngredientsTable(cocktail_id, ingredient_id, conn)
 				continue
@@ -259,5 +261,5 @@ func StartSetUp() {
 
 	// 挿入するときにこの処理をしようとすると親になるカクテルが絶対先に処理しなくてはいけないようになるので数が増えると大変
 	// 親のカクテルのIDを挿入する処理
-	insertCocktailParentId(conn)
+	// insertCocktailParentId(conn)
 }

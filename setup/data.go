@@ -23,7 +23,6 @@ func CocktailFactory(
 	category string,
 	description string,
 	vol int,
-	parentName string,
 	ingredientCount int,
 	ingredients []common.Ingredient,
 ) *common.Cocktail {
@@ -32,7 +31,6 @@ func CocktailFactory(
 		Category: category,
 		Description: description,
 		Vol: vol,
-		ParentName: parentName,
 		IngredientCount: ingredientCount,
 		Ingredients: ingredients,
 	}
@@ -82,31 +80,31 @@ var LimeJuice = IngredientFactory("ライムジュース", "ライムジュー�
 var TonicWater = IngredientFactory("トニックウォーター", "トニックウォーター", "", ingredient_category_softdrink, 0)
 
 var CocktailArr = []*common.Cocktail{
-	CocktailFactory("ジンバッグ", cocktail_category_long , "ジンベースのカクテル", 10, "", 2, []common.Ingredient{
+	CocktailFactory("ジンバッグ", cocktail_category_long , "ジンベースのカクテル", 10, 2, []common.Ingredient{
 		*Gin, *GigerAle,
 	}),
-	CocktailFactory("ジントニック", cocktail_category_long , "ジンベースのカクテル", 10, "", 2, []common.Ingredient{
+	CocktailFactory("ジントニック", cocktail_category_long , "ジンベースのカクテル", 10, 2, []common.Ingredient{
 		*Gin, *TonicWater,
 	}),
-	CocktailFactory("スクリュードライバー", cocktail_category_long , "ウォッカベースのカクテル", 10, "", 2, []common.Ingredient{
+	CocktailFactory("スクリュードライバー", cocktail_category_long , "ウォッカベースのカクテル", 10, 2, []common.Ingredient{
 		*Vodka, *OrangeJuice,
 	}),
-	CocktailFactory("モスコミュール", cocktail_category_long , "ウォッカベースのカクテル", 10, "", 3, []common.Ingredient{
+	CocktailFactory("モスコミュール", cocktail_category_long , "ウォッカベースのカクテル", 10, 3, []common.Ingredient{
 		*Vodka, *GigerAle, *LimeJuice,
 	}),
-	CocktailFactory("ラムバック", cocktail_category_long , "", 10, "", 2, []common.Ingredient{
+	CocktailFactory("ラムバック", cocktail_category_long , "", 10, 2, []common.Ingredient{
 		*WhiteRam, *GigerAle,
 	}),
-	CocktailFactory("ラムバック", cocktail_category_long , "", 10, "", 2, []common.Ingredient{
+	CocktailFactory("ラムバック", cocktail_category_long , "", 10, 2, []common.Ingredient{
 		*DarkRam, *GigerAle,
 	}),
-	CocktailFactory("サイドカー", cocktail_category_short , "", 20, "", 3, []common.Ingredient{
+	CocktailFactory("サイドカー", cocktail_category_short , "", 20, 3, []common.Ingredient{
 		*Brandy, *WhiteCuracao, *LemonJuice,
 	}),
-	CocktailFactory("ホワイトレディー", cocktail_category_short , "ジンベースのカクテル", 20, "サイドカー", 3, []common.Ingredient{
+	CocktailFactory("ホワイトレディー", cocktail_category_short , "ジンベースのカクテル", 20, 3, []common.Ingredient{
 		*Gin, *WhiteCuracao, *LemonJuice,
 	}),
-	CocktailFactory("シャーリーテンプル", cocktail_category_non_alcohol , "ノンアルコールのカクテル", 0, "", 2, []common.Ingredient{
+	CocktailFactory("シャーリーテンプル", cocktail_category_non_alcohol , "ノンアルコールのカクテル", 0,  2, []common.Ingredient{
 		*GigerAle, *GrenadineSyrup,
 	}),
 	// CocktailFactory("スクリュードライバー", "ウォッカベースのカクテル", 15, 2, []common.Ingredient{
