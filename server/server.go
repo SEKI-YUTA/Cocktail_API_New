@@ -120,7 +120,7 @@ func getQueryString(availableIngredients []string) string {
 	return "(" + queryStr + ")"
 }
 
-func getCocktails(isComputeMode bool, availableIngredients []string, filter string) []*common.Cocktail {
+func getCocktails(isComputeMode bool, availableIngredients []string, filter string) []common.Cocktail {
 	// 既に持っている材料のクエリを作る
 	whereStr := ""
 	if isComputeMode {
@@ -149,26 +149,30 @@ func getCocktails(isComputeMode bool, availableIngredients []string, filter stri
 		whereStr = "WHERE i.longname IN " + queryStr + filterStr
 	}
 
-	cocktailIngredientMap := map[string][]common.Ingredient{}
+	cocktailMap := map[string]common.Cocktail{}
 	cocktailIngredientCountMap := map[string]int{}
 	rows, err := pool.Query(
 		context.Background(),
-		"SELECT c.cocktail_id, c.name, c.ingredient_count, ic.name, i.ingredient_id, i.shortname, i.longname, i.description, i.vol, i.ingredient_category_id FROM cocktail_ingredients "+
+		"SELECT c.cocktail_id, c.name, c.description, c.cocktail_category_id, c.vol, c.ingredient_count, cc.name, ic.name, i.ingredient_id, i.shortname, i.longname, i.description, i.vol, i.ingredient_category_id FROM cocktail_ingredients "+
 			"INNER JOIN ingredients i ON i.ingredient_id = cocktail_ingredients.ingredient_id "+
 			"INNER JOIN cocktails c ON c.cocktail_id = cocktail_ingredients.cocktail_id "+
 			"INNER JOIN ingredient_categories ic ON i.ingredient_category_id = ic.ingredient_category_id "+
+			"INNER JOIN cocktail_categories cc ON cc.cocktail_category_id = c.cocktail_category_id "+
 			whereStr,
 	)
-
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to get craftableCocktail data %v\n", err)
 		// os.Exit(1)
 	}
-
 	for rows.Next() {
+		fmt.Println("rows.Next()")
 		cocktailId := 0
 		cocktailName := ""
+		cocktailDescription := ""
+		cocktailCategoryId := 0
+		cocktailVol := 0
 		ingredientCount := 0
+		cocktailCategory := ""
 		ingredientCategory := ""
 		ingredientId := 0
 		ingredientShortName := ""
@@ -176,25 +180,35 @@ func getCocktails(isComputeMode bool, availableIngredients []string, filter stri
 		ingredientDescription := ""
 		ingredientVol := 0
 		ingredientCategoryId := 0
-		rows.Scan(&cocktailId, &cocktailName, &ingredientCount, &ingredientCategory, &ingredientId, &ingredientShortName, &ingredientLongName, &ingredientDescription, &ingredientVol, &ingredientCategoryId)
-		cocktailIngredientCountMap[cocktailName+"-"+strconv.Itoa(cocktailId)] = ingredientCount
-		cocktailIngredientMap[cocktailName+"-"+strconv.Itoa(cocktailId)] = append(
-			cocktailIngredientMap[cocktailName+"-"+strconv.Itoa(cocktailId)],
-			common.Ingredient{IngredientId: ingredientId, Category: ingredientCategory, ShortName: ingredientShortName, LongName: ingredientLongName, Description: ingredientDescription, Vol: ingredientVol, IngredientCategoryId: ingredientCategoryId},
-		)
-	}
-	craftableCocktailArr := []*common.Cocktail{}
-	for key, ingredientArr := range cocktailIngredientMap {
-		ingredientCount := cocktailIngredientCountMap[key]
-		if len(ingredientArr) == ingredientCount {
-			sp := strings.Split(key, "-")
-			id, err := strconv.Atoi(sp[1])
-			if err != nil {
-
+		rows.Scan(&cocktailId, &cocktailName, &cocktailDescription, &cocktailCategoryId, &cocktailVol, &ingredientCount, &cocktailCategory, &ingredientCategory, &ingredientId, &ingredientShortName, &ingredientLongName, &ingredientDescription, &ingredientVol, &ingredientCategoryId)
+		mapKey := cocktailName + "-" + strconv.Itoa(cocktailId)
+		_, alreadyExists := cocktailMap[mapKey]
+		ingredient := common.Ingredient{IngredientId: ingredientId, Category: ingredientCategory, ShortName: ingredientShortName, LongName: ingredientLongName, Description: ingredientDescription, Vol: ingredientVol, IngredientCategoryId: ingredientCategoryId}
+		var tmpCocktail common.Cocktail
+		if alreadyExists {
+			tmpCocktail = cocktailMap[mapKey]
+		} else {
+			tmpCocktail = common.Cocktail{
+				CocktailId:         cocktailId,
+				Name:               cocktailName,
+				Description:        cocktailDescription,
+				Vol:                cocktailVol,
+				IngredientCount:    ingredientCount,
+				Category:           cocktailCategory,
+				CocktailCategoryId: cocktailCategoryId,
+				Ingredients:        []common.Ingredient{},
 			}
-			cocktail := queryCocktailById(id)
-			cocktail.Ingredients = ingredientArr
-			craftableCocktailArr = append(craftableCocktailArr, &cocktail)
+		}
+		tmpCocktail.Ingredients = append(tmpCocktail.Ingredients, ingredient)
+		cocktailMap[mapKey] = tmpCocktail
+		cocktailIngredientCountMap[mapKey] = ingredientCount
+	}
+	fmt.Println(cocktailMap)
+	craftableCocktailArr := []common.Cocktail{}
+	for key, cocktail := range cocktailMap {
+		ingredientCount := cocktailIngredientCountMap[key]
+		if len(cocktail.Ingredients) == ingredientCount {
+			craftableCocktailArr = append(craftableCocktailArr, cocktail)
 		}
 	}
 	/*
