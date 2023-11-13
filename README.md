@@ -16,11 +16,13 @@
 - APIサーバー機能
 
   エンドポイント
-    - cocktails
+    - /compute/cocktails
       - クエリに使用できる素材を渡すことによって作れるカクテルがレスポンスで帰ってくる
       - 持っている素材がジンジャエールとラムとカシスとオレンジジュースの場合のクエリの例↓
       - /cocktails?ingredients[]=ジンジャーエール&ingredients[]=ラム&ingredients[]=カシス&ingredients[]=オレンジジュース
-    - ingredients
+    - /cocktails/all
+      - 全てのカクテルのリストが返ってくる
+    - /ingredients
       - 全ての材料のリストが返ってくる（持っていない材料を含む）
   > **Note**
   > このAPIは現在持っている材料のリストはクライアント側で保持することを想定
