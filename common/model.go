@@ -36,12 +36,6 @@ type Cocktail struct {
     // カクテルの度数
     Vol int `json:"vol"`
 
-    // 親カクテルの名前 ex: サイドカー
-    ParentName string `json:"parent_name"`
-
-    // 親カクテルのID
-    ParentCocktailId int `json:"parent_cocktail_id"`
-
     // 材料の数（/cocktailエンドポイントで作れるカクテルを検索するときに使用するので必要）
 	IngredientCount int `json:"ingredient_count"`
 

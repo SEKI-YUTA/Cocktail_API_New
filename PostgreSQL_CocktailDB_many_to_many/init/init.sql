@@ -32,8 +32,6 @@ CREATE TABLE cocktails(
     description varchar(1000) DEFAULT '',
     cocktail_category_id int,
     foreign key(cocktail_category_id) references cocktail_categories(cocktail_category_id),
-    parent_cocktail_id int,
-    foreign key(parent_cocktail_id) references cocktails(cocktail_id),
     vol int DEFAULT 0,
     ingredient_count int DEFAULT 0,
     primary key(cocktail_id)
@@ -48,13 +46,3 @@ CREATE TABLE cocktail_ingredients(
     -- CONSTRAINT cocktail_ingredients_pk PRIMARY KEY (cocktail_id, ingredient_id)
     primary key(cocktail_ingredient_id)
 );
-
-CREATE TABLE cocktail_parent_child(
-    cocktail_parent_child_id serial not null,
-    parent_id int,
-    child_id int,
-    foreign key(parent_id) references cocktails(cocktail_id),
-    foreign key(child_id) references cocktails(cocktail_id),
-    primary key(cocktail_parent_child_id)
-);
-
