@@ -129,15 +129,15 @@ func getCocktails(isComputeMode bool, availableIngredients []string, filter stri
 
 		// フィルタがある場合はフィルタをかける
 		filterStr := ""
-		categiryId := 0
+		categoryId := 0
 		switch filter {
 		case "short":
-			categiryId = queryCocktailCategoryId("ショートカクテル")
-			filterStr = " AND c.cocktail_category_id = " + strconv.Itoa(categiryId)
+			categoryId = queryCocktailCategoryId("ショートカクテル")
+			filterStr = " AND c.cocktail_category_id = " + strconv.Itoa(categoryId)
 			break
 		case "long":
-			categiryId = queryCocktailCategoryId("ロングカクテル")
-			filterStr = " AND c.cocktail_category_id = " + strconv.Itoa(categiryId)
+			categoryId = queryCocktailCategoryId("ロングカクテル")
+			filterStr = " AND c.cocktail_category_id = " + strconv.Itoa(categoryId)
 			break
 		case "non_alcohol":
 			filterStr = " AND c.vol = 0"
