@@ -4,6 +4,9 @@
 
 -- Dumped from database version 15.4 (Debian 15.4-1.pgdg120+1)
 -- Dumped by pg_dump version 16.1
+CREATE database cocktail_db;
+
+\c cocktail_db;
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
