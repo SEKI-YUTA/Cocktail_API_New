@@ -20,7 +20,7 @@ jobs:
         run: |
           gh pr create \
           -B main \
-          -t '【本番反映】${{ steps.check_pr.outputs.message }}' \
+          -t 'mainブランチへdevブランチの変更を反映' \
           -b 'this pr contains the diff of betweem main and dev'
       # ghコマンドを使用するとしっかりPRを作成できるが↑を使用するとエラーは出ないがPRが作成されない
       # Todo: いつか調査する
