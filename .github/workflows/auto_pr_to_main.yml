@@ -1,0 +1,38 @@
+name: Auto PR to main
+
+on:
+  workflow_dispatch:
+  pull_request: #動作確認用に追加後で消す
+  schedule:
+    - cron: '0 7 * * 5'  # run at 16:00(JST) on every friday
+
+jobs:
+  create_pr_to_main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout dev branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+      - name: create pull request
+        env:
+            GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr create \
+          -B main \
+          -t 'mainブランチへdevブランチの変更を反映' \
+          -b 'this pr contains the diff of betweem main and dev'
+      # ghコマンドを使用するとしっかりPRを作成できるが↑を使用するとエラーは出ないがPRが作成されない
+      # Todo: いつか調査する
+      # - uses: peter-evans/create-pull-request@v5
+      #   with:
+      #     # token: ${{secrets.MY_GITHUB_TOKEN}}
+      #     commit-message: Auto PR to main
+      #     branch: auto-pr-to-main
+      #     branch-suffix: timestamp
+      #     base: main
+      #     delete-branch: true
+      #     title: Auto PR to main
+      #     body: |
+      #       this pr is auto generated
+      #       this pr is contains the diff of betweem main and dev
