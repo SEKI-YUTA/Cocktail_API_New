@@ -7,7 +7,7 @@ on:
     - cron: '15 4 * * 0'  #run at 13:15(JST)
 
 jobs:
-  build:
+  create_pr_to_main:
     runs-on: ubuntu-latest
     steps:
       - name: checkout dev branch
