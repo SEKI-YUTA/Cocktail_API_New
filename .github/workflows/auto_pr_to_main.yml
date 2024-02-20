@@ -14,15 +14,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: dev
-      - uses: peter-evans/create-pull-request@v5
-        with:
-          # token: ${{secrets.MY_GITHUB_TOKEN}}
-          commit-message: Auto PR to main
-          branch: auto-pr-to-main
-          branch-suffix: timestamp
-          base: main
-          delete-branch: true
-          title: Auto PR to main
-          body: |
-            this pr is auto generated
-            this pr is contains the diff of betweem main and dev
+      - name: create pull request
+        env:
+            GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr create \
+          -B main \
+          -t '【本番反映】${{ steps.check_pr.outputs.message }}' \
+          -b 'this pr contains the diff of betweem main and dev'
+      # - uses: peter-evans/create-pull-request@v5
+      #   with:
+      #     # token: ${{secrets.MY_GITHUB_TOKEN}}
+      #     commit-message: Auto PR to main
+      #     branch: auto-pr-to-main
+      #     branch-suffix: timestamp
+      #     base: main
+      #     delete-branch: true
+      #     title: Auto PR to main
+      #     body: |
+      #       this pr is auto generated
+      #       this pr is contains the diff of betweem main and dev
