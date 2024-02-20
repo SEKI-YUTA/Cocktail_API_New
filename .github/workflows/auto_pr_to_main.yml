@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   pull_request: #動作確認用に追加後で消す
   schedule:
-    - cron: '15 4 * * 0'  #run at 13:15(JST)
+    - cron: '0 7 * * 5'  # run at 16:00(JST) on every friday
 
 jobs:
   create_pr_to_main:
