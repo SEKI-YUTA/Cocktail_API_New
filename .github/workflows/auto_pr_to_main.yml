@@ -16,7 +16,7 @@ jobs:
           ref: dev
       - uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{secrets.MY_GITHUB_TOKEN}}
+          # token: ${{secrets.MY_GITHUB_TOKEN}}
           commit-message: Auto PR to main
           branch: auto-pr-to-main/
           branch-suffix: timestamp
