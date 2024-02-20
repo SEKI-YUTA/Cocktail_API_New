@@ -22,6 +22,8 @@ jobs:
           -B main \
           -t '【本番反映】${{ steps.check_pr.outputs.message }}' \
           -b 'this pr contains the diff of betweem main and dev'
+      # ghコマンドを使用するとしっかりPRを作成できるが↑を使用するとエラーは出ないがPRが作成されない
+      # Todo: いつか調査する
       # - uses: peter-evans/create-pull-request@v5
       #   with:
       #     # token: ${{secrets.MY_GITHUB_TOKEN}}
